@@ -1,0 +1,31 @@
+.jas-wrapper {
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: var(--direction);
+  gap: var(--gap);
+  transform: translate3d(var(--offsetX), var(--offsetY), 0);
+  transition: transform var(--speed) ease;
+}
+
+.jas-slide {
+  flex: 0 0 var(--slideWidth);
+}
+
+.jas-button-prev,
+.jas-button-next {
+  position: absolute;
+  background: rebeccapurple;
+  width: 40px;
+  height: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+.jas-button-next {
+  right: 10px;
+}
+
+.jas-button-prev {
+  left: 10px;
+}

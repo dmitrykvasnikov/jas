@@ -1,0 +1,29 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.slider {
+  height: 60%;
+  width: 80%;
+}
+
+.jas-slide {
+  height: 100%;
+  border: 1px solid green;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
