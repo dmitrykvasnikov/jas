@@ -193,12 +193,14 @@ export default class Jas {
   }
 
   setupNextSlide() {
+    if (this.wrapper.querySelector('.next')) return
     let offset = this.config.activeIndex + this.config.slidesToScroll + Math.floor(this.config.slidesToShow) - this.length
     if (offset > 0) this.moveSlides(offset)
     this.getSlideById(this.config.next).classList.add('next')
   }
 
   setupPrevSlide() {
+    if (this.wrapper.querySelector('.prev')) return
     let offset = this.config.activeIndex - this.config.slidesToScroll - 1
     if (offset < 0) this.moveSlides(offset)
     this.getSlideById(this.config.prev).classList.add('prev')
