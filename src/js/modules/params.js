@@ -5,6 +5,10 @@ const DEFAULTS = {
   loop: false,
   direction: 'row',
   active: 1,
+  // index of active slide relative to parent wrapper
+  activeIndex: 1,
+  prev: 1,
+  next: 1,
   speed: '500ms',
   offsetX: '0px',
   offsetY: '0px',

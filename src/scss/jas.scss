@@ -6,6 +6,7 @@
   gap: var(--gap);
   transform: translate3d(var(--offsetX), var(--offsetY), 0);
   transition: transform var(--speed) ease;
+  transform-origin: 100%;
 }
 
 .jas-slide {
@@ -14,18 +15,50 @@
 
 .jas-button-prev,
 .jas-button-next {
+  border: none;
+  background: transparent;
+  display: block;
   position: absolute;
-  background: rebeccapurple;
-  width: 40px;
-  height: 40px;
-  top: 50%;
-  transform: translateY(-50%);
+  border-top: 4px solid blue;
+  border-left: 4px solid blue;
+  width: 30px;
+  height: 30px;
   cursor: pointer;
-}
-.jas-button-next {
-  right: 10px;
+  transition: border-color 500ms ease;
+  &.disabled {
+    cursor: initial;
+    pointer-events: none;
+    border-color: grey;
+  }
 }
 
-.jas-button-prev {
-  left: 10px;
+.jas-button-next.row,
+.jas-button-prev.row {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.jas-button-next.row {
+  right: 20px;
+  transform: translateY(-50%) rotate(135deg);
+}
+
+.jas-button-prev.row {
+  transform: translateY(-50%) rotate(-45deg);
+  left: 20px;
+}
+
+.jas-button-next.column,
+.jas-button-prev.column {
+  left: 50%;
+}
+
+.jas-button-prev.column {
+  top: 20px;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.jas-button-next.column {
+  transform: translateX(-50%) rotate(-135deg);
+  bottom: 20px;
 }
