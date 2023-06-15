@@ -29,12 +29,6 @@ export default class Jas {
       start: 0,
       offset: 0
     }
-    this.mouse = {
-      down: false,
-      delta: 0,
-      start: 0,
-      offset: 0
-    }
     this.position = 'active'
     this.init()
   }
@@ -72,7 +66,6 @@ export default class Jas {
     // setting up navigation
     this.setupNavigation()
     this.setupTouch()
-    this.setupMouse()
   }
 
   setupNavigation() {
@@ -92,14 +85,6 @@ export default class Jas {
     this.wrapper.addEventListener('touchstart', this.touchStartHandler.bind(this))
     this.wrapper.addEventListener('touchend', this.touchEndHandler.bind(this))
     this.wrapper.addEventListener('touchmove', this.touchMoveHandler.bind(this))
-  }
-
-  setupMouse() {
-    this.wrapper.addEventListener('mousedown', this.mouseDownHandler.bind(this))
-    this.wrapper.addEventListener('mouseup', this.mouseUpHandler.bind(this))
-    this.wrapper.addEventListener('mouseleave', this.mouseUpHandler.bind(this))
-    this.wrapper.addEventListener('mouseout', this.mouseUpHandler.bind(this))
-    this.wrapper.addEventListener('mousemove', this.mouseMoveHandler.bind(this))
   }
 
   updateWrapperProps(props) {
@@ -129,7 +114,6 @@ export default class Jas {
         this.config[this.var.offset] = -(parseInt(this.config.slideWidth) * (this.length - this.config.slidesToShow) + parseInt(this.config.gap) * Math.floor((this.length - this.config.slidesToShow))) - 1 + 'px'
         break
     }
-
     this.updateWrapperProps([this.var.offset])
     if (!animation) {
       setTimeout(() => {
@@ -144,7 +128,6 @@ export default class Jas {
 
   prevElHandler() {
     if (this.inTransition && this.touch.id == null) return
-
     if (!this.config.loop) {
       this.navigation.nextEl.classList.remove('disabled')
       this.config.active -= this.config.slidesToScroll
@@ -174,7 +157,6 @@ export default class Jas {
 
   nextElHandler() {
     if (this.inTransition && this.touch.id == null) return
-
     if (!this.config.loop) {
       this.navigation.prevEl.classList.remove('disabled')
       this.config.active += this.config.slidesToScroll
@@ -210,43 +192,6 @@ export default class Jas {
     this.touch.offset = parseInt(this.config[this.var.offset])
   }
 
-  mouseDownHandler(e) {
-    if (this.mouse.down) return
-    this.mouse.down = true
-    this.mouse.start = e[this.var.mouseProp]
-    this.mouse.offset = parseInt(this.config[this.var.offset])
-  }
-
-  mouseUpHandler(e) {
-    console.log(this.mouse)
-    if (Math.abs(this.mouse.delta) > 100) {
-      if (this.mouse.delta > 0) { this.prevElHandler() } else { this.nextElHandler() }
-    } else {
-      this.config[this.var.offset] = this.mouse.offset + 'px'
-      this.updateWrapperProps([this.var.offset])
-    }
-    this.mouse.down = false
-    this.mouse.offset = 0
-    this.mouse.start = 0
-    this.mouse.delta = 0
-  }
-
-  mouseMoveHandler(e) {
-    if (this.mouse.down) {
-      this.mouse.delta = e[this.var.mouseProp] - this.mouse.start
-      if (this.mouse.delta > 0 && !this.wrapper.querySelector('.prev')) {
-        this.setupPrevSlide()
-        this.mouse.offset = parseInt(this.config[this.var.offset])
-      }
-      if (this.mouse.delta < 0 && !this.wrapper.querySelector('.next')) {
-        this.setupNextSlide()
-        this.mouse.offset = parseInt(this.config[this.var.offset])
-      }
-      this.config[this.var.offset] = this.mouse.offset + this.mouse.delta + 'px'
-      this.updateWrapperProps([this.var.offset])
-    }
-  }
-
   touchMoveHandler(e) {
     if (e.touches[0].identifier === this.touch.id) {
       this.touch.delta = e.touches[0][this.var.touchProp] - this.touch.start
@@ -275,7 +220,6 @@ export default class Jas {
     this.touch.delta = 0
     this.touch.start = 0
     this.touch.offset = 0
-
   }
 
   moveSlides(ind) {
