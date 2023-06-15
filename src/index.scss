@@ -13,6 +13,7 @@ body {
   align-items: center;
   justify-content: center;
   height: 100%;
+  overflow-x: hidden;
 }
 
 .slider {
@@ -26,4 +27,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.test {
+  --offset: 0px;
+  padding: 40px;
+  background-color: #ddee;
+  transform: translateX(var(--offset));
 }

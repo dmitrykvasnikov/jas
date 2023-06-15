@@ -18,9 +18,23 @@ export default class Jas {
       axis: this.config.direction === 'row' ? 'width' : 'height',
       offset: this.config.direction === 'row' ? 'offsetX' : 'offsetY',
       offsetProp: this.config.direction === 'row' ? 'offsetLeft' : 'offsetTop',
+      touchProp: this.config.direction === 'row' ? 'clientX' : 'clientY',
+      mouseProp: this.config.direction === 'row' ? 'clientX' : 'clientY',
     }
     // flag used to disable buttons during transition
     this.inTransition = false
+    this.touch = {
+      id: null,
+      delta: 0,
+      start: 0,
+      offset: 0
+    }
+    this.mouse = {
+      down: false,
+      delta: 0,
+      start: 0,
+      offset: 0
+    }
     this.position = 'active'
     this.init()
   }
@@ -34,12 +48,12 @@ export default class Jas {
     if (this.length > this.config.slidesToShow && this.length < Math.ceil(this.config.slidesToShow) + this.config.slidesToScroll) {
       this.config.slidesToScroll = this.length - Math.ceil(this.config.slidesToShow)
     }
-    console.log(this.config.slidesToScroll)
 
 
     // setting up resize observer for wrapper
     const ro = new ResizeObserver((entries) => {
       this.updateSlideWidth()
+      this.updateSliderPosition(false)
     })
     ro.observe(this.wrapper)
 
@@ -56,10 +70,12 @@ export default class Jas {
     this.updateWrapperProps(['gap', 'direction', 'speed', 'offsetX', 'offsetY'])
     this.updateSliderPosition(false)
     // setting up navigation
-    this.setupNafigation()
+    this.setupNavigation()
+    this.setupTouch()
+    this.setupMouse()
   }
 
-  setupNafigation() {
+  setupNavigation() {
     this.navigation.prevEl = document.querySelector(this.config.navigation.prev)
     this.navigation.nextEl = document.querySelector(this.config.navigation.next)
     if (!this.config.loop && this.config.active == 1) this.navigation.prevEl.classList.add('disabled')
@@ -70,6 +86,20 @@ export default class Jas {
       this.navigation.nextEl.addEventListener('click', this.nextElHandler.bind(this))
       this.navigation.prevEl.addEventListener('click', this.prevElHandler.bind(this))
     }
+  }
+
+  setupTouch() {
+    this.wrapper.addEventListener('touchstart', this.touchStartHandler.bind(this))
+    this.wrapper.addEventListener('touchend', this.touchEndHandler.bind(this))
+    this.wrapper.addEventListener('touchmove', this.touchMoveHandler.bind(this))
+  }
+
+  setupMouse() {
+    this.wrapper.addEventListener('mousedown', this.mouseDownHandler.bind(this))
+    this.wrapper.addEventListener('mouseup', this.mouseUpHandler.bind(this))
+    this.wrapper.addEventListener('mouseleave', this.mouseUpHandler.bind(this))
+    this.wrapper.addEventListener('mouseout', this.mouseUpHandler.bind(this))
+    this.wrapper.addEventListener('mousemove', this.mouseMoveHandler.bind(this))
   }
 
   updateWrapperProps(props) {
@@ -113,7 +143,7 @@ export default class Jas {
   }
 
   prevElHandler() {
-    if (this.inTransition) return
+    if (this.inTransition && this.touch.id == null) return
 
     if (!this.config.loop) {
       this.navigation.nextEl.classList.remove('disabled')
@@ -143,7 +173,8 @@ export default class Jas {
   }
 
   nextElHandler() {
-    if (this.inTransition) return
+    if (this.inTransition && this.touch.id == null) return
+
     if (!this.config.loop) {
       this.navigation.prevEl.classList.remove('disabled')
       this.config.active += this.config.slidesToScroll
@@ -172,15 +203,94 @@ export default class Jas {
     }, 0);
   }
 
+  touchStartHandler(e) {
+    if (this.touch.id != null) return
+    this.touch.id = e.touches[0].identifier
+    this.touch.start = e.touches[0][this.var.touchProp]
+    this.touch.offset = parseInt(this.config[this.var.offset])
+  }
+
+  mouseDownHandler(e) {
+    if (this.mouse.down) return
+    this.mouse.down = true
+    this.mouse.start = e[this.var.mouseProp]
+    this.mouse.offset = parseInt(this.config[this.var.offset])
+  }
+
+  mouseUpHandler(e) {
+    console.log(this.mouse)
+    if (Math.abs(this.mouse.delta) > 100) {
+      if (this.mouse.delta > 0) { this.prevElHandler() } else { this.nextElHandler() }
+    } else {
+      this.config[this.var.offset] = this.mouse.offset + 'px'
+      this.updateWrapperProps([this.var.offset])
+    }
+    this.mouse.down = false
+    this.mouse.offset = 0
+    this.mouse.start = 0
+    this.mouse.delta = 0
+  }
+
+  mouseMoveHandler(e) {
+    if (this.mouse.down) {
+      this.mouse.delta = e[this.var.mouseProp] - this.mouse.start
+      if (this.mouse.delta > 0 && !this.wrapper.querySelector('.prev')) {
+        this.setupPrevSlide()
+        this.mouse.offset = parseInt(this.config[this.var.offset])
+      }
+      if (this.mouse.delta < 0 && !this.wrapper.querySelector('.next')) {
+        this.setupNextSlide()
+        this.mouse.offset = parseInt(this.config[this.var.offset])
+      }
+      this.config[this.var.offset] = this.mouse.offset + this.mouse.delta + 'px'
+      this.updateWrapperProps([this.var.offset])
+    }
+  }
+
+  touchMoveHandler(e) {
+    if (e.touches[0].identifier === this.touch.id) {
+      this.touch.delta = e.touches[0][this.var.touchProp] - this.touch.start
+      if (this.touch.delta > 0 && !this.wrapper.querySelector('.prev')) {
+        this.setupPrevSlide()
+        this.touch.offset = parseInt(this.config[this.var.offset])
+      }
+      if (this.touch.delta < 0 && !this.wrapper.querySelector('.next')) {
+        this.setupNextSlide()
+        this.touch.offset = parseInt(this.config[this.var.offset])
+
+      }
+      this.config[this.var.offset] = this.touch.offset + this.touch.delta + 'px'
+      this.updateWrapperProps([this.var.offset])
+    }
+  }
+
+  touchEndHandler(e) {
+    if (Math.abs(this.touch.delta) > 100) {
+      if (this.touch.delta > 0) { this.prevElHandler() } else { this.nextElHandler() }
+    } else {
+      this.config[this.var.offset] = this.touch.offset + 'px'
+      this.updateWrapperProps([this.var.offset])
+    }
+    this.touch.id = null
+    this.touch.delta = 0
+    this.touch.start = 0
+    this.touch.offset = 0
+
+  }
+
   moveSlides(ind) {
     if (ind > 0) {
       while (ind > 0) {
-        this.wrapper.append(this.wrapper.firstElementChild)
+        let child = this.wrapper.firstElementChild
+        child.classList.remove('prev')
+        this.wrapper.append(child)
         ind--
       }
     } else {
       while (ind < 0) {
-        this.wrapper.prepend(this.wrapper.lastElementChild)
+        let child = this.wrapper.lastElementChild
+        child.classList.remove('next')
+        this.wrapper.prepend(child)
         ind++
       }
     }
