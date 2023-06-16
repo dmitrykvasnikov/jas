@@ -34,7 +34,9 @@ export default class Jas {
     // resize observer
     let ro = new ResizeObserver(entries => this.setupSliderByIndex(this.config.index, false))
     ro.observe(this.wrapper)
-
+    this.wrapper.addEventListener('transitionend', () => this.wrapper.style.transition = '', {
+      once: true
+    })
 
   }
 
@@ -43,46 +45,47 @@ export default class Jas {
   }
 
   setupNavigation() {
-    // if buttons are default - we look up inside current slider otherwire inside document
-    if (this.config.navigation.prev === '.jas-button-prev') {
-      if (this.slider.querySelector('.jas-button-prev')) {
-        this.navigation.prevEl = this.slider.querySelector('.jas-button-prev')
-        this.navigation.prevEl.classList.add(this.config.direction)
+    if (this.config.navigation.show) {
+      // if buttons are default - we look up inside current slider otherwire inside document
+      if (this.config.navigation.prev === '.jas-button-prev') {
+        if (this.slider.querySelector('.jas-button-prev')) {
+          this.navigation.prevEl = this.slider.querySelector('.jas-button-prev')
+          this.navigation.prevEl.classList.add(this.config.direction)
+        }
+      } else {
+        if (document.querySelector(this.config.navigation.prev))
+          this.navigation.prevEl = document.querySelector(this.config.navigation.prev)
       }
-    } else {
-      if (document.querySelector(this.config.navigation.prev))
-        this.navigation.prevEl = document.querySelector(this.config.navigation.prev)
-    }
-    if (this.config.navigation.next === '.jas-button-next') {
-      if (this.slider.querySelector(this.config.navigation.next)) {
-        this.navigation.nextEl = this.slider.querySelector(this.config.navigation.next)
-        this.navigation.nextEl.classList.add(this.config.direction)
+      if (this.config.navigation.next === '.jas-button-next') {
+        if (this.slider.querySelector(this.config.navigation.next)) {
+          this.navigation.nextEl = this.slider.querySelector(this.config.navigation.next)
+          this.navigation.nextEl.classList.add(this.config.direction)
+        }
+      } else {
+        if (document.querySelector(this.config.navigation.next))
+          this.navigation.nextEl = document.querySelector(this.config.navigation.next)
       }
-    } else {
-      if (document.querySelector(this.config.navigation.next))
-        this.navigation.nextEl = document.querySelector(this.config.navigation.next)
-    }
-    if (this.navigation.nextEl) {
-      this.navigation.nextEl.addEventListener('click', this.nextElHandler.bind(this))
-    }
-    if (this.navigation.prevEl) {
-      this.navigation.prevEl.addEventListener('click', this.prevElHandler.bind(this))
+      if (this.navigation.nextEl) {
+        this.navigation.nextEl.addEventListener('click', this.nextElHandler.bind(this))
+      }
+      if (this.navigation.prevEl) {
+        this.navigation.prevEl.addEventListener('click', this.prevElHandler.bind(this))
+      }
     }
   }
 
   setupSliderByPosition(animation = true) {
-    if (!animation) {
-      this.wrapper.style.transition = ''
-    } else {
+    if (animation) {
       this.wrapper.style.transition = 'transform var(--speed) ease'
     }
     this.wrapper.style.transform = `translateX(${this.config.position}px)`
+
   }
 
   setupSliderByIndex(index, animation = true) {
-    if (this.align != 'end') {
+    if (this.align === 'index') {
       this.config.position = -this.wrapper.querySelector(`[data-id="${index}"`).offsetLeft
-    } else {
+    } else if (this.align === 'end') {
       this.config.position = -this.slides.reduce((res, slide) => {
         return res + slide.offsetWidth
       }, 0) - (this.length - 1) * parseInt(this.config.gap) - 1 + this.wrapper.offsetWidth
@@ -108,26 +111,21 @@ export default class Jas {
     if (!this.config.loop) {
       if (this.config.index <= 1) {
         this.config.index = 1
-        this.navigation.prevEl.classList.add(this.config.navigation.disableClass)
         this.align = 'index'
       } else {
-        this.navigation.prevEl.classList.remove(this.config.navigation.disableClass)
         if (this.config.index > this.length - Math.floor(this.config.toShow)) {
           this.config.index = this.length - Math.floor(this.config.toShow) + 1
           this.align = 'end'
-          this.navigation.nextEl.classList.add(this.config.navigation.disableClass)
-
         } else {
           this.align = 'index'
-          this.navigation.nextEl.classList.remove(this.config.navigation.disableClass)
-
         }
       }
     }
   }
 
+  // change 'disable' status on handler, update dots / pagination
   updateHandlers() {
-    if (!this.config.loop && this.navigation) {
+    if (!this.config.loop && this.config.navigation.show) {
       if (this.length <= Math.ceil(this.config.toShow)) {
         this.config.index = 1
         this.navigation.prevEl.classList.add(this.config.navigation.disableClass)
@@ -151,8 +149,8 @@ export default class Jas {
     if (!this.config.loop) {
       this.config.index += this.config.toScroll
       this.checkIndex()
+      this.updateHandlers()
       this.setupSliderByIndex(this.config.index)
-      console.log(this.config)
     }
   }
 
@@ -160,8 +158,8 @@ export default class Jas {
     if (!this.config.loop) {
       this.config.index -= this.config.toScroll
       this.checkIndex()
+      this.updateHandlers()
       this.setupSliderByIndex(this.config.index)
-      console.log(this.config)
     }
   }
 }

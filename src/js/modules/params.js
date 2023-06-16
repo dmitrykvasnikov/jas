@@ -14,9 +14,10 @@ const DEFAULTS = {
 }
 
 const NAVIGATION = {
+  show: true,
   prev: '.jas-button-prev',
   next: '.jas-button-next',
-  disableClass: 'disabled'
+  disableClass: 'disabled',
 }
 
 export {
