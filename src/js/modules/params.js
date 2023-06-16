@@ -1,23 +1,22 @@
 const DEFAULTS = {
-  slidesToShow: 1,
-  slidesToScroll: 1,
+  toShow: 1,
+  toScroll: 1,
   gap: '0px',
   loop: false,
   direction: 'row',
-  active: 1,
-  // index of active slide relative to parent wrapper
-  activeIndex: 1,
-  prev: 1,
-  next: 1,
+  index: 1,
   speed: '500ms',
   offsetX: '0px',
   offsetY: '0px',
-  overflow: 'hidden'
+  overflow: 'hidden',
+  position: 0,
+  lastPosition: 0,
 }
 
 const NAVIGATION = {
   prev: '.jas-button-prev',
   next: '.jas-button-next',
+  disableClass: 'disabled'
 }
 
 export {

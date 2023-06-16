@@ -4,13 +4,13 @@
   display: flex;
   flex-direction: var(--direction);
   gap: var(--gap);
-  transform: translate3d(var(--offsetX), var(--offsetY), 0);
-  transition: transform var(--speed) ease;
+  // transform: translate3d(var(--offsetX), var(--offsetY), 0);
+  // transition: transform var(--speed) ease;
   transform-origin: 100%;
 }
 
 .jas-slide {
-  flex: 0 0 var(--slideWidth);
+  flex: 0 0 calc((100% - var(--gap) * var(--gapToShow)) / var(--toShow));
 }
 
 .jas-button-prev,
