@@ -12,6 +12,8 @@ export default class Jas {
       isDragging: false,
       startTouch: 0,
       lastTranslate: 0,
+      mouseDown: false,
+      href: null
     }
     // DOM elements property (will be initialized in init)
     this.d = {}
@@ -93,16 +95,16 @@ export default class Jas {
   }
 
   nextElHandler() {
-    if (this.v.inTransition) return
     this.c.align = 'index'
+    if (this.v.inTransition) return
     this.c.active += this.c.toScroll
     this.normalizeIndex()
     this.setupPosition()
   }
 
   prevElHandler() {
-    if (this.v.inTransition) return
     this.c.align = 'index'
+    if (this.v.inTransition) return
     this.c.active -= this.c.toScroll
     this.normalizeIndex()
     this.setupPosition()
@@ -123,6 +125,7 @@ export default class Jas {
     })
     // removing draggable effect from images
     this.d.wrapper.querySelectorAll('img').forEach(image => image.addEventListener('dragstart', (e) => e.preventDefault()))
+    this.d.wrapper.querySelectorAll('a').forEach(image => image.addEventListener('dragstart', (e) => e.preventDefault()))
   }
 
   setupSlider() {
@@ -131,8 +134,9 @@ export default class Jas {
     this.d.slider.style.touchAction = this.c.direction === 'row' ? 'pan-y' : 'pan-x'
     this.d.slider.addEventListener('pointerdown', this.pointerDown.bind(this))
     this.d.slider.addEventListener('pointerup', this.pointerUp.bind(this))
-    this.d.slider.addEventListener('pointerleave', this.pointerUp.bind(this))
+    this.d.slider.addEventListener('pointercancel', this.pointerUp.bind(this))
     this.d.slider.addEventListener('pointermove', this.pointerMove.bind(this))
+    this.d.slider.addEventListener('mousedown', this.mouseDown.bind(this))
   }
 
   setupPosition(animation = true) {
@@ -193,6 +197,7 @@ export default class Jas {
 
   pointerDown(e) {
     if (e.target === this.nav.prevEl || e.target === this.nav.nextEl) return
+    this.v.href = e.target.href
     this.c.align = 'position'
     this.d.slider.setPointerCapture(e.pointerId)
     this.v.startTouch = e[this.v.pointerProp]
@@ -203,10 +208,13 @@ export default class Jas {
 
   pointerUp(e) {
     if (!this.v.isDragging) return
-    cancelAnimationFrame(this.v.animationID)
     this.v.isDragging = false
-    requestAnimationFrame(() => {
-      let delta = (this.c.translate - this.v.lastTranslate)
+    cancelAnimationFrame(this.v.animationID)
+    this.d.slider.releasePointerCapture(e.pointerId)
+    let delta = (this.c.translate - this.v.lastTranslate)
+    if (Math.abs(delta) < 2 && this.v.mouseDown && this.v.href) {
+      window.open(this.v.href, '_blank')
+    } else
       if (Math.abs(delta) < 150) {
         this.c.translate = this.v.lastTranslate
         this.setupPosition()
@@ -215,8 +223,8 @@ export default class Jas {
       } else {
         this.prevElHandler()
       }
-    })
-
+    this.v.href = null
+    this.v.mouseDown = false
   }
 
   pointerMove(e) {
@@ -224,6 +232,10 @@ export default class Jas {
       this.c.translate = this.v.lastTranslate - e[this.v.pointerProp] + this.v.startTouch
       console.log(this.c.translate)
     }
+  }
+
+  mouseDown() {
+    this.v.mouseDown = true
   }
 
   animation() {

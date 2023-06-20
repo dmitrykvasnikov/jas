@@ -5,7 +5,7 @@ import './scss/jas.scss'
 import Jas from './js/jas.js'
 
 const slider = new Jas('.slider', {
-  toShow: 2.7,
+  toShow: 2,
   toScroll: 2,
   gap: '10px',
   active: 1,

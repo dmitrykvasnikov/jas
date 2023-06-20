@@ -29,6 +29,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  // user-select: none;
 }
 
 .test {
@@ -36,4 +37,10 @@ body {
   padding: 40px;
   background-color: #ddee;
   transform: translateX(var(--offset));
+}
+
+a {
+  display: block;
+  height: 100%;
+  width: 100%;
 }
