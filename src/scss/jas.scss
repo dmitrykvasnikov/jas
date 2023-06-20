@@ -6,11 +6,10 @@
   gap: var(--gap);
   // transform: translate3d(var(--offsetX), var(--offsetY), 0);
   // transition: transform var(--speed) ease;
-  transform-origin: 100%;
 }
 
 .jas-slide {
-  flex: 0 0 calc((100% - var(--gap) * var(--gapToShow)) / var(--toShow));
+  flex: 0 0 var(--flex);
 }
 
 .jas-button-prev,

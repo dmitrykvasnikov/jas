@@ -4,22 +4,20 @@ const DEFAULTS = {
   gap: '0px',
   loop: false,
   direction: 'row',
-  index: 1,
+  active: 1,
+  lastActive: 1,
+  next: 1,
+  prev: 1,
   speed: '500ms',
-  offsetX: '0px',
-  offsetY: '0px',
+  translate: 0,
   overflow: 'hidden',
-  position: 0,
-  lastPosition: 0,
+  flex: 'calc((100% - var(--gap) * var(--gapToShow)) / var(--toShow))',
+  align: 'index',
+  navigation: {
+    prev: '.jas-button-prev',
+    next: '.jas-button-next',
+    disableClass: 'disabled',
+  }
 }
 
-const NAVIGATION = {
-  show: true,
-  prev: '.jas-button-prev',
-  next: '.jas-button-next',
-  disableClass: 'disabled',
-}
-
-export {
-  DEFAULTS, NAVIGATION
-}
+export default DEFAULTS

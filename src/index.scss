@@ -23,7 +23,9 @@ body {
 
 .jas-slide {
   height: 100%;
-  border: 1px solid green;
+  width: 100%;
+  background: coral;
+  // border: 1px solid green;
   display: flex;
   align-items: center;
   justify-content: center;
