@@ -267,7 +267,7 @@ export default class Jas {
         this.v.lastTranslate = this.c.translate
         this.c.align = 'position'
       }
-      if ((this.c.translate - this.v.lastTranslate) > 160) this.pointerUp()
+      if (Math.abs(this.c.translate - this.v.lastTranslate) > 160) this.pointerUp(e)
       this.c.translate = this.v.lastTranslate - e[this.v.pointerProp] + this.v.startTouch
     }
   }
