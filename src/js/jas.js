@@ -43,9 +43,8 @@ export default class Jas {
     this.updateSliderProps(['direction', 'toShow', 'toScroll', 'gap', 'gapToShow', 'flex', 'speed'])
     this.setupSlider()
     this.setupWrapper()
-    this.setupPosition(false)
     this.setupSlidesID()
-    this.getSlideByID(this.c.active).classList.add('active')
+    this.getSlideByID(this.c.active).classList.add('jas-active')
     this.updateSlidesPosition()
     this.setupNavigation()
     this.normalizeIndex()
@@ -97,17 +96,38 @@ export default class Jas {
   nextElHandler() {
     this.c.align = 'index'
     if (this.v.inTransition) return
-    this.c.active += this.c.toScroll
-    this.normalizeIndex()
-    this.setupPosition()
+    if (this.c.loop) {
+      this.setupNextSlide()
+      this.getSlideByID(this.c.next).classList.remove('jas-next')
+      this.getSlideByID(this.c.prev).classList.remove('jas-prev')
+      this.getSlideByID(this.c.active).classList.add('jas-prev')
+      this.c.active += this.c.toScroll
+      this.normalizeIndex()
+      this.setupPosition()
+    } else {
+      this.c.active += this.c.toScroll
+      this.normalizeIndex()
+      this.setupPosition()
+    }
+
   }
 
   prevElHandler() {
     this.c.align = 'index'
     if (this.v.inTransition) return
-    this.c.active -= this.c.toScroll
-    this.normalizeIndex()
-    this.setupPosition()
+    if (this.c.loop) {
+      this.setupPrevSlide()
+      this.getSlideByID(this.c.prev).classList.remove('jas-prev')
+      this.getSlideByID(this.c.next).classList.remove('jas-next')
+      this.getSlideByID(this.c.active).classList.add('jas-next')
+      this.c.active -= this.c.toScroll
+      this.normalizeIndex()
+      this.setupPosition()
+    } else {
+      this.c.active -= this.c.toScroll
+      this.normalizeIndex()
+      this.setupPosition()
+    }
   }
 
   setupWrapper() {
@@ -143,22 +163,24 @@ export default class Jas {
     if (animation) {
       this.d.wrapper.style.transition = `all ${this.c.speed} ease-in-out`
     }
-    switch (this.c.align) {
-      case 'index':
-        this.d.wrapper.style.transform = `${this.v.translateProp}(-${this.w[this.c.active]}px)`
-        this.c.translate = this.w[this.c.active]
-        break
-      case 'position':
-        this.d.wrapper.style.transform = `${this.v.translateProp}(${-1 * this.c.translate}px)`
-        break
-      case 'end':
-        this.c.translate = this.w[this.d.slides.length] + this.w['l'] - this.w['w']
-        this.d.wrapper.style.transform = `${this.v.translateProp}(-${this.c.translate}px)`
-        break
-    }
+    setTimeout(() => {
+      switch (this.c.align) {
+        case 'index':
+          this.d.wrapper.style.transform = `${this.v.translateProp}(-${this.w[this.c.active]}px)`
+          this.c.translate = this.w[this.c.active]
+          break
+        case 'position':
+          this.d.wrapper.style.transform = `${this.v.translateProp}(${-1 * this.c.translate}px)`
+          break
+        case 'end':
+          this.c.translate = this.w[this.d.slides.length] + this.w['l'] - this.w['w']
+          this.d.wrapper.style.transform = `${this.v.translateProp}(-${this.c.translate}px)`
+          break
+      }
+    }, 10);
     if (this.c.active != this.c.lastActive) {
-      this.getSlideByID(this.c.lastActive).classList.remove('active')
-      this.getSlideByID(this.c.active).classList.add('active')
+      this.getSlideByID(this.c.lastActive).classList.remove('jas-active')
+      this.getSlideByID(this.c.active).classList.add('jas-active')
       this.c.lastActive = this.c.active
     }
   }
@@ -174,6 +196,13 @@ export default class Jas {
           this.c.active = this.d.slides.length - Math.floor(this.c.toShow) + 1
           if (this.c.toShow != Math.floor(this.c.toShow)) this.c.align = 'end'
         }
+      } else {
+        if (this.c.active < 1) { this.c.active = this.d.slides.length + this.c.active } else
+          if (this.c.active > this.d.slides.length) { this.c.active = this.c.active - this.d.slides.length }
+        this.c.prev = this.c.active - Math.floor(this.c.toScroll)
+        if (this.c.prev < 1) this.c.prev = this.d.slides.length + this.c.prev
+        this.c.next = this.c.active + Math.floor(this.c.toScroll)
+        if (this.c.next > this.d.slides.length) this.c.next = this.c.next - this.d.slides.length
       }
     this.updateHandlers()
   }
@@ -230,7 +259,6 @@ export default class Jas {
   pointerMove(e) {
     if (this.v.isDragging) {
       this.c.translate = this.v.lastTranslate - e[this.v.pointerProp] + this.v.startTouch
-      console.log(this.c.translate)
     }
   }
 
@@ -241,5 +269,48 @@ export default class Jas {
   animation() {
     this.setupPosition(false)
     if (this.v.isDragging) this.v.animationID = requestAnimationFrame(this.animation.bind(this))
+  }
+
+  setupNextSlide() {
+    if (this.d.wrapper.querySelector('.jas-next')) return
+    let ind = this.getRelativeIndex()
+    if (ind + Math.ceil(this.c.toShow) - 1 + Math.floor(this.c.toScroll) > this.d.slides.length) this.moveSlides(this.d.slides.length - ind - Math.ceil(this.c.toShow) + 1 - Math.floor(this.c.toScroll))
+    this.getSlideByID(this.c.next).classList.add('jas-next')
+
+  }
+
+  setupPrevSlide() {
+    if (this.d.wrapper.querySelector('.jas-prev')) return
+    let ind = this.getRelativeIndex()
+    if (ind <= this.c.toScroll) this.moveSlides(this.c.toScroll - ind + 1)
+    this.getSlideByID(this.c.prev).classList.add('jas-prev')
+  }
+
+  getRelativeIndex() {
+    let ind = 0
+    while (ind < this.d.slides.length) {
+      if (this.d.slides.item(ind).classList.contains('jas-active')) return (ind + 1)
+      ind++
+    }
+    return (-1)
+  }
+
+  moveSlides(ind) {
+    if (ind === 0) return
+    if (ind > 0) {
+      while (ind > 0) {
+        this.d.wrapper.lastElementChild.classList.remove('jas-next')
+        this.d.wrapper.prepend(this.d.wrapper.lastElementChild)
+        ind--
+      }
+    } else {
+      while (ind < 0) {
+        this.d.wrapper.firstElementChild.classList.remove('jas-prev')
+        this.d.wrapper.append(this.d.wrapper.firstElementChild)
+        ind++
+      }
+    }
+    this.updateSlidesPosition()
+    this.setupPosition(false)
   }
 }
