@@ -98,12 +98,14 @@ export default class Jas {
     if (this.v.inTransition) return
     if (this.c.loop) {
       this.setupNextSlide()
-      this.getSlideByID(this.c.next).classList.remove('jas-next')
-      this.getSlideByID(this.c.prev).classList.remove('jas-prev')
-      this.getSlideByID(this.c.active).classList.add('jas-prev')
-      this.c.active += this.c.toScroll
-      this.normalizeIndex()
-      this.setupPosition()
+      setTimeout(() => {
+        this.getSlideByID(this.c.next).classList.remove('jas-next')
+        this.getSlideByID(this.c.prev).classList.remove('jas-prev')
+        this.getSlideByID(this.c.active).classList.add('jas-prev')
+        this.c.active += this.c.toScroll
+        this.normalizeIndex()
+        this.setupPosition()
+      }, 5);
     } else {
       this.c.active += this.c.toScroll
       this.normalizeIndex()
@@ -117,12 +119,14 @@ export default class Jas {
     if (this.v.inTransition) return
     if (this.c.loop) {
       this.setupPrevSlide()
-      this.getSlideByID(this.c.prev).classList.remove('jas-prev')
-      this.getSlideByID(this.c.next).classList.remove('jas-next')
-      this.getSlideByID(this.c.active).classList.add('jas-next')
-      this.c.active -= this.c.toScroll
-      this.normalizeIndex()
-      this.setupPosition()
+      setTimeout(() => {
+        this.getSlideByID(this.c.prev).classList.remove('jas-prev')
+        this.getSlideByID(this.c.next).classList.remove('jas-next')
+        this.getSlideByID(this.c.active).classList.add('jas-next')
+        this.c.active -= this.c.toScroll
+        this.normalizeIndex()
+        this.setupPosition()
+      }, 5);
     } else {
       this.c.active -= this.c.toScroll
       this.normalizeIndex()
@@ -136,13 +140,9 @@ export default class Jas {
       this.setupPosition(false)
     })
     ro.observe(this.d.wrapper)
-    this.d.wrapper.addEventListener('transitionstart', () => {
-      this.v.inTransition = true
-    })
-    this.d.wrapper.addEventListener('transitionend', () => {
-      this.v.inTransition = false
-      this.d.wrapper.style.transition = ''
-    })
+    setTimeout(() => {
+      this.d.wrapper.style.transition = `all ${this.c.speed} ease`
+    }, 20);
     // removing draggable effect from images
     this.d.wrapper.querySelectorAll('img').forEach(image => image.addEventListener('dragstart', (e) => e.preventDefault()))
     this.d.wrapper.querySelectorAll('a').forEach(image => image.addEventListener('dragstart', (e) => e.preventDefault()))
@@ -160,24 +160,20 @@ export default class Jas {
   }
 
   setupPosition(animation = true) {
-    if (animation) {
-      this.d.wrapper.style.transition = `all ${this.c.speed} ease-in-out`
+
+    switch (this.c.align) {
+      case 'index':
+        this.d.wrapper.style.transform = `${this.v.translateProp}(-${this.w[this.c.active]}px)`
+        this.c.translate = this.w[this.c.active]
+        break
+      case 'position':
+        this.d.wrapper.style.transform = `${this.v.translateProp}(${-1 * this.c.translate}px)`
+        break
+      case 'end':
+        this.c.translate = this.w[this.d.slides.length] + this.w['l'] - this.w['w']
+        this.d.wrapper.style.transform = `${this.v.translateProp}(-${this.c.translate}px)`
+        break
     }
-    setTimeout(() => {
-      switch (this.c.align) {
-        case 'index':
-          this.d.wrapper.style.transform = `${this.v.translateProp}(-${this.w[this.c.active]}px)`
-          this.c.translate = this.w[this.c.active]
-          break
-        case 'position':
-          this.d.wrapper.style.transform = `${this.v.translateProp}(${-1 * this.c.translate}px)`
-          break
-        case 'end':
-          this.c.translate = this.w[this.d.slides.length] + this.w['l'] - this.w['w']
-          this.d.wrapper.style.transform = `${this.v.translateProp}(-${this.c.translate}px)`
-          break
-      }
-    }, 10);
     if (this.c.active != this.c.lastActive) {
       this.getSlideByID(this.c.lastActive).classList.remove('jas-active')
       this.getSlideByID(this.c.active).classList.add('jas-active')
@@ -243,21 +239,35 @@ export default class Jas {
     let delta = (this.c.translate - this.v.lastTranslate)
     if (Math.abs(delta) < 2 && this.v.mouseDown && this.v.href) {
       window.open(this.v.href, '_blank')
-    } else
-      if (Math.abs(delta) < 150) {
-        this.c.translate = this.v.lastTranslate
-        this.setupPosition()
-      } else if (delta > 0) {
-        this.nextElHandler()
-      } else {
-        this.prevElHandler()
-      }
+    }
+    if (Math.abs(delta) < 150) {
+      // this.c.translate = this.v.lastTranslate
+      this.c.align = 'index'
+      this.setupPosition()
+    } else if (delta > 0) {
+      this.nextElHandler()
+    } else {
+      this.prevElHandler()
+    }
     this.v.href = null
     this.v.mouseDown = false
   }
 
   pointerMove(e) {
     if (this.v.isDragging) {
+      if (this.v.startTouch < e[this.v.pointerProp] && !this.d.wrapper.querySelector('.jas-prev')) {
+        this.c.align = 'index'
+        this.setupPrevSlide()
+        this.v.lastTranslate = this.c.translate
+        this.c.align = 'position'
+
+      } else if (this.v.startTouch > e[this.v.pointerProp] && !this.d.wrapper.querySelector('jas-next')) {
+        this.c.align = 'index'
+        this.setupNextSlide()
+        this.v.lastTranslate = this.c.translate
+        this.c.align = 'position'
+      }
+      if ((this.c.translate - this.v.lastTranslate) > 160) this.pointerUp()
       this.c.translate = this.v.lastTranslate - e[this.v.pointerProp] + this.v.startTouch
     }
   }
@@ -296,6 +306,7 @@ export default class Jas {
   }
 
   moveSlides(ind) {
+    this.d.wrapper.style.transition = ''
     if (ind === 0) return
     if (ind > 0) {
       while (ind > 0) {
@@ -312,5 +323,8 @@ export default class Jas {
     }
     this.updateSlidesPosition()
     this.setupPosition(false)
+    setTimeout(() => {
+      this.d.wrapper.style.transition = `all ${this.c.speed} ease`
+    }, 5);
   }
 }
