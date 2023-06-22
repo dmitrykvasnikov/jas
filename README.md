@@ -1,6 +1,3 @@
-# webpack
-My webpack config
-First version was made on 2023-06-03
+# Just Another Slider
 
-HTML pages shoudl be listed in array htmlPageNames, index page included, wihout file extention ('html' by default), for example: 
-['file1', 'folder/file2' ...]
+Simple slider implementation with infinite scroll
